@@ -1,0 +1,9 @@
+[110.target.Train] # NEXUSTRAINMOTHERSHIP_MOTHERSHIP
+produces = 10 # MOTHERSHIP
+requirement = ""
+
+[1632.target.Build] # TRAINQUEEN_QUEEN
+produces = 126 # QUEEN
+
+[2704.target.Build] # EFFECT_SPAWNLOCUSTS
+produces = 693 # LOCUSTMPFLYING

@@ -1,0 +1,123 @@
+# https://github.com/Blizzard/s2client-proto/blob/master/s2clientprotocol/data.proto
+#
+# Types:
+#  * bool - Boolean
+#  * str - String
+#  * u32 - Unsigned 32-bit integer
+#  * r32 - 32-bit real number, with at least two decimal digits of precision
+#  * option<T> - Some(T) or None
+#  * list<T> - Ordered list, zero or more values of T
+#  * set<T> - Unordered set, zero or more values of T
+#  * ONE_OF { ... } - Sum type, a Rust-style enum
+#
+# Example flow: Roach burrow / unburrow, assumes all required tech is done
+#  * LARVA -> Ability(LARVATRAIN_ROACH, cost={minerals: 75, gas: 25, ...})
+#  * ROACH -> Ability(BURROWDOWN, cost={minerals: 0, gas: 0, ...})
+#  * ROACHBURROWED -> Ability(BURROWUP, cost={minerals: 0, gas: 0, ...})
+#  * ROACH -> Ability(ATTACK, cost={minerals: 0, gas: 0, ...})
+
+Cost
+    minerals: u32
+    gas: u32
+    time: u32
+
+UnitAbility
+    produces: option<Unit> # Not availabe with generic abilities, e.g. LIFT
+    double: bool # Zerglings are created in pairs
+
+ResearchAbility
+    upgrade: Upgrade
+
+Ability
+    name: str
+    target: ONE_OF {
+        None, # No target, often uses the unit itself
+        Point,
+        Unit,
+        PointOrUnit,
+        PointOrNone,
+        Build(UnitAbility), # [Point]
+        BuildOnUnit(UnitAbility), # Vespene gaysers [Unit]
+        BuildInstant(UnitAbility), # Add-ons [PointOrNone]
+        Morph(UnitAbility), # [None]
+        MorphPlace(UnitAbility), # [Point]
+        Train(UnitAbility), # [None]
+        TrainPlace(UnitAbility), # Protoss warp-ins [Point]
+        Research(ResearchAbility), # [None]
+    }
+    cast_range: r32
+    energy_cost: u32
+    allow_minimap: bool
+    allow_autocast: bool
+    cost: Cost
+    effect: list<Effect> # Might cause one or more effects
+    buff: list<Buff> # Might grant one or more buffs
+    cooldown: option<r32> # When building units see target_type.cost.time
+
+Buff
+    name: str
+
+Effect
+    name: str
+    radius: option<r32>
+
+Weapon
+    target_type: ONE_OF {Ground, Air, Any}
+    damage_per_hit: r32
+    damage_splash: r32 # Percentage: TODO: more splash types
+    attacks: u32 # Number of attacks, e.g. 2 for Colossus
+    range: u32
+    cooldown: r32
+    bonuses: list<Bonus>
+        against: Attribute
+        damage: r32
+
+Unit # Both moving units and structures here, all numbers without upgrades
+    name: str # Mode is included, i.e. Roach and RoachBurrowed are different units
+    # The normal mode if such exists, e.g. Roach for RoachBurrowed
+    # For buildings this is the tech alias, e.g. Refinery for RichRefinery
+    normal_mode: option<Unit>
+    race: Race
+    supply: r32 # Negative if grants supply. Halves used for e.g. Zerglings
+    cargo_size: option<u32> # None for untransportable
+    cargo_capacity: option<u32> # None if cannot transport units
+    max_health: hp: u32
+    max_shield: option<u32>
+    armor: u32
+    sight: r32 # Vision range
+    detection_range: option<r32> # None if not detector
+    speed: option<r32> # None if cannot move at all
+    speed_creep_mul: option<r32> # Creep speed multiplier
+    max_energy: option<u32> # None if doesn't have energy
+    start_energy: option<u32> # None if doesn't have energy
+    weapons: list<Weapon> # List of weapons, sorted by priority
+    attributes: set<Attribute>
+    abilities: list<UnitAbility> # Some abilities have requirements before they can be used
+    placement_size: option<u32> # Building size on grid, not available for non-structures
+    radius: r32 # Radius approximating the size of the unit.
+    power_radius: option<r32> # Produces pylon power with this radius
+    accepts_addon: bool # Terran add-on can be used with this structure
+    needs_power: bool # Requires a pylon power to function
+    needs_creep: bool # Requires creep for placement
+    needs_gayser: bool # Requires a vespene gayser for placement
+    # Unit type kinds
+    is_structure: bool # Structure attribute is set
+    is_addon: bool # Can be used as an add-on
+    is_worker: bool
+    is_townhall: bool # Flying buildings not included
+
+UnitAbility
+    ability: Ability
+    requirements: list<Requirement>
+
+Upgrade
+    name: str
+    cost: Cost # TODO: move to ability / remove
+
+Requirement
+    requirement: ONE_OF {
+        addon: Unit,            # Has add-on
+        addon_to: Unit,         # Is add-on to
+        building: Unit,  # Buidling exists (and completed)
+        upgrade: Upgrade,       # Upgrade done
+    }

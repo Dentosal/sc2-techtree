@@ -1,0 +1,15 @@
+# Editor
+
+# Rust
+/target
+**/*.rs.bk
+Cargo.lock
+
+# Python
+*.py[oc]
+__pycache__/
+
+# Temp dirs
+generated/
+
+# Misc

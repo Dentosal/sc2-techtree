@@ -1,0 +1,48 @@
+digraph A {
+    node [shape=plaintext];
+
+    Weapon [shape=box];
+    UnitAbility [shape=box];
+    Unit [shape=box];
+    Buff [shape=box];
+    Effect [shape=box];
+
+    Ability [label=<<table border="0" cellborder="1" cellspacing="0">
+        <tr><td port="self" colspan="3">Ability</td></tr>
+        <tr>
+            <td port="Create">Build / Morph / Train</td>
+            <td port="Other">Other</td>
+            <td port="Research">Research</td>
+        </tr>
+     </table>>];
+
+    Upgrade [shape=box];
+
+    Requirement [label=<<table border="0" cellborder="1" cellspacing="0">
+        <tr><td port="self" colspan="3">Requirement</td></tr>
+        <tr>
+            <td port="Building">BuildingExists / AddOn</td>
+            <td port="Upgrade">Upgrade</td>
+        </tr>
+     </table>>];
+
+    Ability:Other -> Effect [label = "causes"];
+    Ability:Other -> Buff [label = "causes"];
+
+    Ability:Create -> Unit [label = "produces"];
+    Ability:Research -> Upgrade [label = "upgrades"];
+
+    Requirement:Building -> Unit [headport="se"];
+    Requirement:Upgrade -> Upgrade [headport="e"];
+
+    Unit -> Unit [label = "normal_mode", tailport="w"];
+    Unit -> Weapon [label = "has"];
+    Unit -> UnitAbility [label = "has"];
+
+    UnitAbility -> Requirement:self [label = "requires", headport="n"];
+    UnitAbility -> Ability:self [label = "is"];
+
+    {rank=same Unit Weapon}
+    {rank=same UnitAbility Requirement}
+    {rank=same Ability Upgrade}
+}
