@@ -144,6 +144,22 @@ impl TechData {
 
         result
     }
+
+    /// Abilities that build (not morph or train) a (structure) unit
+    /// This includes Drone morphs to structures
+    pub fn build_abilities(&self, unittype_id: UnitTypeId) -> Vec<Ability> {
+        let mut result: Vec<Ability> = Vec::new();
+
+        for ability in &self.abilities {
+            if let AbilityTarget::Build(au) = ability.target.clone() {
+                if au.produces == unittype_id {
+                    result.push(ability.clone());
+                }
+            }
+        }
+
+        result
+    }
 }
 
 #[cfg(test)]
@@ -261,5 +277,61 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec!["TRAIN_ADEPT", "TRAINWARP_ADEPT"]
         );
+    }
+
+    #[test]
+    fn build_abilities() {
+        let td = TechData::current();
+
+        // Banelings cannot be built
+        assert_eq!(td.build_abilities(UnitTypeId::new(9)), vec![]);
+
+        // Drones cannot be built, they are morphed from larva
+        assert_eq!(td.build_abilities(UnitTypeId::new(104)), vec![]);
+
+        // Invalid units cannot be built
+        assert_eq!(td.build_abilities(UnitTypeId::new(123_456)), vec![]);
+
+        // Pylon
+        assert_eq!(
+            td.build_abilities(UnitTypeId::new(60))
+                .iter()
+                .map(|a| a.name.clone())
+                .collect::<Vec<_>>(),
+            vec!["PROTOSSBUILD_PYLON"]
+        );
+
+        // Forge
+        assert_eq!(
+            td.build_abilities(UnitTypeId::new(63))
+                .iter()
+                .map(|a| a.name.clone())
+                .collect::<Vec<_>>(),
+            vec!["PROTOSSBUILD_FORGE"]
+        );
+
+        // Hatchery
+        assert_eq!(
+            td.build_abilities(UnitTypeId::new(86))
+                .iter()
+                .map(|a| a.name.clone())
+                .collect::<Vec<_>>(),
+            vec!["ZERGBUILD_HATCHERY"]
+        );
+
+        // Lair cannot be built, its upgraded from a Hatchery
+        assert_eq!(td.build_abilities(UnitTypeId::new(100)), vec![]);
+
+        // Supplydepot
+        assert_eq!(
+            td.build_abilities(UnitTypeId::new(19))
+                .iter()
+                .map(|a| a.name.clone())
+                .collect::<Vec<_>>(),
+            vec!["TERRANBUILD_SUPPLYDEPOT"]
+        );
+
+        // Supplydepotlowered cannot be built directly
+        assert_eq!(td.build_abilities(UnitTypeId::new(47)), vec![]);
     }
 }
