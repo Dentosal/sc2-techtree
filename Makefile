@@ -48,3 +48,7 @@ graph:
 .PHONY: visualize
 visualize:
 	@$(python) -m generate.visualize
+
+.PHONY: test
+test: validate
+	@cargo test
