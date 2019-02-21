@@ -1,8 +1,22 @@
 [package]
 name = "sc2-techtree"
+description = "StarCraft II tech tree"
 version = "0.1.0"
 authors = ["Hannes Karppila <hannes.karppila@gmail.com>"]
 edition = "2018"
+
+repository = "https://github.com/Dentosal/sc2-techtree"
+readme = "README.md"
+
+keywords = ["sc2", "starcraft2"]
+categories = ["games"]
+
+license = "MIT"
+
+exclude = [
+    "docs/images/techtree_*.png",
+    "generate/**/*.py",
+]
 
 [dependencies]
 regex = "1"
