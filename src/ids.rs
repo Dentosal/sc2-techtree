@@ -17,6 +17,11 @@ impl UnitTypeId {
     pub fn new(v: u32) -> Self {
         UnitTypeId(v)
     }
+
+    /// Create new id from u32
+    pub const fn value(&self) -> u32 {
+        self.0
+    }
 }
 
 impl AbilityId {
@@ -24,11 +29,21 @@ impl AbilityId {
     pub fn new(v: u32) -> Self {
         AbilityId(v)
     }
+
+    /// Create new id from u32
+    pub const fn value(&self) -> u32 {
+        self.0
+    }
 }
 
 impl UpgradeId {
     /// Create new id from u32
     pub fn new(v: u32) -> Self {
         UpgradeId(v)
+    }
+
+    /// Create new id from u32
+    pub const fn value(&self) -> u32 {
+        self.0
     }
 }

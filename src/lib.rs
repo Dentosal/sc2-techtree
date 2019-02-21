@@ -106,11 +106,50 @@ impl TechData {
         }
         Err(QueryError::NotFound)
     }
+
+    /// Abilities that morph (not train or build) into a unit
+    pub fn morph_abilities(&self, unittype_id: UnitTypeId) -> Vec<Ability> {
+        let mut result: Vec<Ability> = Vec::new();
+
+        for ability in &self.abilities {
+            if let AbilityTarget::Morph(au) = ability.target.clone() {
+                if au.produces == unittype_id {
+                    result.push(ability.clone());
+                }
+            } else if let AbilityTarget::MorphPlace(au) = ability.target.clone() {
+                if au.produces == unittype_id {
+                    result.push(ability.clone());
+                }
+            }
+        }
+
+        result
+    }
+
+    /// Abilities that train (not morph or build) a unit
+    pub fn train_abilities(&self, unittype_id: UnitTypeId) -> Vec<Ability> {
+        let mut result: Vec<Ability> = Vec::new();
+
+        for ability in &self.abilities {
+            if let AbilityTarget::Train(au) = ability.target.clone() {
+                if au.produces == unittype_id {
+                    result.push(ability.clone());
+                }
+            } else if let AbilityTarget::TrainPlace(au) = ability.target.clone() {
+                if au.produces == unittype_id {
+                    result.push(ability.clone());
+                }
+            }
+        }
+
+        result
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{QueryError, TechData, UpgradeId};
+    use super::ids::*;
+    use super::{QueryError, TechData};
 
     use std::fs::File;
     use std::io::prelude::*;
@@ -129,19 +168,98 @@ mod tests {
     fn upgrade_ability() {
         let td = TechData::current();
 
+        // Burrow
         assert_eq!(
             td.upgrade_ability(UpgradeId::new(64)).unwrap().name,
             "RESEARCH_BURROW"
         );
 
+        // Charge
         assert_eq!(
             td.upgrade_ability(UpgradeId::new(86)).unwrap().name,
             "RESEARCH_CHARGE"
         );
 
+        // Invalid upgrade
         assert_eq!(
             td.upgrade_ability(UpgradeId::new(123_456)),
             Err(QueryError::NotFound)
+        );
+    }
+
+    #[test]
+    fn morph_abilities() {
+        let td = TechData::current();
+
+        // Supplydepot
+        assert_eq!(
+            td.morph_abilities(UnitTypeId::new(19))
+                .iter()
+                .map(|a| a.name.clone())
+                .collect::<Vec<_>>(),
+            vec!["MORPH_SUPPLYDEPOT_RAISE"]
+        );
+
+        // Supplydepotlowered
+        assert_eq!(
+            td.morph_abilities(UnitTypeId::new(47))
+                .iter()
+                .map(|a| a.name.clone())
+                .collect::<Vec<_>>(),
+            vec!["MORPH_SUPPLYDEPOT_LOWER"]
+        );
+
+        // Baneling
+        assert_eq!(
+            td.morph_abilities(UnitTypeId::new(9))
+                .iter()
+                .map(|a| a.name.clone())
+                .collect::<Vec<_>>(),
+            vec!["MORPHZERGLINGTOBANELING_BANELING", "BURROWUP_BANELING"]
+        );
+
+        // Drone
+        assert_eq!(
+            td.morph_abilities(UnitTypeId::new(104))
+                .iter()
+                .map(|a| a.name.clone())
+                .collect::<Vec<_>>(),
+            vec!["LARVATRAIN_DRONE", "BURROWUP_DRONE"]
+        );
+    }
+
+    #[test]
+    fn train_abilities() {
+        let td = TechData::current();
+
+        // Supplydepots cannot be trained
+        assert_eq!(td.train_abilities(UnitTypeId::new(19)), vec![]);
+
+        // Banelings cannot be trained
+        assert_eq!(td.train_abilities(UnitTypeId::new(9)), vec![]);
+
+        // Drones cannot be trained, they are morphed from larva
+        assert_eq!(td.train_abilities(UnitTypeId::new(104)), vec![]);
+
+        // Invalid units cannot be trained
+        assert_eq!(td.train_abilities(UnitTypeId::new(123_456)), vec![]);
+
+        // Marine
+        assert_eq!(
+            td.train_abilities(UnitTypeId::new(48))
+                .iter()
+                .map(|a| a.name.clone())
+                .collect::<Vec<_>>(),
+            vec!["BARRACKSTRAIN_MARINE"]
+        );
+
+        // Adept
+        assert_eq!(
+            td.train_abilities(UnitTypeId::new(311))
+                .iter()
+                .map(|a| a.name.clone())
+                .collect::<Vec<_>>(),
+            vec!["TRAIN_ADEPT", "TRAINWARP_ADEPT"]
         );
     }
 }

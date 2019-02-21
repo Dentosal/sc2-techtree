@@ -54,15 +54,15 @@ pub enum AbilityTarget {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct AbilityUnit {
-    produces: UnitTypeId,
+    /// Produced unit
+    pub produces: UnitTypeId,
     /// Zerglings are created in pairs, false for everything else
     #[serde(default)]
-    double: bool,
-    #[serde(default)]
-    cost: Cost,
+    pub double: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct AbilityResearch {
+    /// Upgrades
     pub upgrade: UpgradeId,
 }
