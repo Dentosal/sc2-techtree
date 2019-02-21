@@ -83,6 +83,7 @@ class MyBot(sc2.BotAI):
 
         is_morph = (
             "MORPH" in a.id.name
+            or a.id.name.startswith("LARVATRAIN_")
             or a.id.name.startswith("UPGRADETO")
             or a.id.name.startswith("BURROW")
             or a.id.name in ["LIFT", "LAND", "SIEGEMODE_SIEGEMODE", "UNSIEGE_UNSIEGE"]
