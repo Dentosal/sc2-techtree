@@ -22,7 +22,7 @@ manually. Unless you find or create a library that does it for you.
 
 # Development
 
-You need `cargo`, `python3.7` or newer + `pipenv`, `jq` and `graphviz` (`dot` command).
+You need `cargo` (Rust nightly), `python3.7` or newer + `pipenv`, `jq` and `graphviz` (`dot` command).
 
 
 The Python code to generate new data is under `generate`, and

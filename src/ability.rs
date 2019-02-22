@@ -5,7 +5,7 @@ use crate::cost::Cost;
 use crate::ids::*;
 
 /// Ability
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub struct Ability {
     /// Id
     pub id: AbilityId,
@@ -27,7 +27,7 @@ pub struct Ability {
     pub cooldown: Option<R32>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub enum AbilityTarget {
     None,
     Point,
@@ -52,7 +52,7 @@ pub enum AbilityTarget {
     Research(AbilityResearch),
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub struct AbilityUnit {
     /// Produced unit
     pub produces: UnitTypeId,
@@ -61,7 +61,7 @@ pub struct AbilityUnit {
     pub double: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub struct AbilityResearch {
     /// Upgrades
     pub upgrade: UpgradeId,

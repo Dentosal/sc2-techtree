@@ -7,6 +7,9 @@
 #![forbid(unused_must_use)]
 // Features
 #![feature(type_alias_enum_variants)]
+#![feature(bind_by_move_pattern_guards)]
+
+use std::collections::HashSet;
 
 use serde::{Deserialize, Serialize};
 
@@ -95,69 +98,60 @@ impl TechData {
         None
     }
 
-    /// Ability that researches an upgrade
-    pub fn upgrade_ability(&self, upgrade_id: UpgradeId) -> Result<Ability, QueryError> {
-        for ability in &self.abilities {
-            if let AbilityTarget::Research(AbilityResearch { upgrade }) = ability.target {
-                if upgrade == upgrade_id {
-                    return Ok(ability.clone());
-                }
-            }
-        }
-        Err(QueryError::NotFound)
+    /// Abilities with matching target
+    pub fn abilities_by_target<F>(&self, f: F) -> HashSet<Ability>
+    where
+        F: Fn(AbilityTarget) -> bool,
+    {
+        self.abilities
+            .iter()
+            .filter(|a| f(a.target.clone()))
+            .cloned()
+            .collect()
+    }
+
+    /// Abilities that research an upgrade
+    pub fn upgrade_abilities(&self, upgrade_id: UpgradeId) -> HashSet<Ability> {
+        self.abilities_by_target(|target| {
+            AbilityTarget::Research(AbilityResearch { upgrade: upgrade_id }) == target
+        })
     }
 
     /// Abilities that morph (not train or build) into a unit
-    pub fn morph_abilities(&self, unittype_id: UnitTypeId) -> Vec<Ability> {
-        let mut result: Vec<Ability> = Vec::new();
-
-        for ability in &self.abilities {
-            if let AbilityTarget::Morph(au) = ability.target.clone() {
-                if au.produces == unittype_id {
-                    result.push(ability.clone());
-                }
-            } else if let AbilityTarget::MorphPlace(au) = ability.target.clone() {
-                if au.produces == unittype_id {
-                    result.push(ability.clone());
-                }
+    pub fn morph_abilities(&self, unittype_id: UnitTypeId) -> HashSet<Ability> {
+        self.abilities_by_target(|target| {
+            if let AbilityTarget::Morph(au) = target {
+                au.produces == unittype_id
+            } else if let AbilityTarget::MorphPlace(au) = target {
+                au.produces == unittype_id
+            } else {
+                false
             }
-        }
-
-        result
+        })
     }
 
     /// Abilities that train (not morph or build) a unit
-    pub fn train_abilities(&self, unittype_id: UnitTypeId) -> Vec<Ability> {
-        let mut result: Vec<Ability> = Vec::new();
-
-        for ability in &self.abilities {
-            if let AbilityTarget::Train(au) = ability.target.clone() {
-                if au.produces == unittype_id {
-                    result.push(ability.clone());
-                }
-            } else if let AbilityTarget::TrainPlace(au) = ability.target.clone() {
-                if au.produces == unittype_id {
-                    result.push(ability.clone());
-                }
+    pub fn train_abilities(&self, unittype_id: UnitTypeId) -> HashSet<Ability> {
+        self.abilities_by_target(|target| {
+            if let AbilityTarget::Train(au) = target {
+                au.produces == unittype_id
+            } else if let AbilityTarget::TrainPlace(au) = target {
+                au.produces == unittype_id
+            } else {
+                false
             }
-        }
-
-        result
+        })
     }
 
     /// Abilities that build (not morph or train) a (structure) unit
-    /// This includes Drone morphs to structures
-    pub fn build_abilities(&self, unittype_id: UnitTypeId) -> Vec<Ability> {
-        let mut result: Vec<Ability> = Vec::new();
-
-        for ability in &self.abilities {
-            if let AbilityTarget::Build(au) = ability.target.clone() {
-                if au.produces == unittype_id {
-                    result.push(ability.clone());
-                }
+    /// This includes Drone "morphs" to structures
+    pub fn build_abilities(&self, unittype_id: UnitTypeId) -> HashSet<Ability> {
+        self.abilities_by_target(|target| {
+            if let AbilityTarget::Build(au) = target {
+                au.produces == unittype_id
+            } else {
+                false
             }
-        }
-
-        result
+        })
     }
 }
